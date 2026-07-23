@@ -57,7 +57,7 @@ pnpm verify   # = web(lint + typecheck + vitest) + server(gradlew check: ktlint/
 - [x] ~~Node.js 22 + pnpm~~ — 확인 완료 (v22.18 / pnpm 10)
 - [x] ~~Docker Desktop~~ — 확인 완료, postgres+redis 컨테이너 기동됨
 - [x] ~~git init·GitHub~~ — https://github.com/brarie/fav-moa (public) 연결 완료
-- [x] ~~00-PLAN.md §5 결정 항목~~ — 2026-07-23 최종 확정 (Spring Boot 3+Kotlin / JPA+Flyway / 잡 테이블 큐 / JWT+Refresh / 컬러 A안 / 개인 서버 docker compose)
+- [x] ~~00-PLAN.md §5 결정 항목~~ — 2026-07-23 최종 확정 (Spring Boot 3+Kotlin / JPA+Flyway / 잡 테이블 큐 / JWT+Refresh / 컬러 B안 심록 · 폴더 중심+공유 / 개인 서버 docker compose)
 
 ### Phase 3 전 (LLM 연동 전까지만 있으면 됨)
 

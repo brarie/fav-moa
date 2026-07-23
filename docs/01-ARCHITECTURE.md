@@ -49,7 +49,7 @@ fav-moa/
 
 ```
 [브라우저] 옴니바에 URL 붙여넣기
-   → POST /bookmarks (JWT)      api: Bookmark(PENDING) + AnalyzeJob(QUEUED) 저장 — 같은 트랜잭션, 202 즉시 응답
+   → POST /bookmarks (JWT, folderId?)  api: Bookmark(PENDING, 현재 폴더) + AnalyzeJob(QUEUED) 저장 — 같은 트랜잭션, 202 즉시 응답
 [worker (profile=worker)]
    → @Scheduled 폴러: SELECT ... FOR UPDATE SKIP LOCKED LIMIT n   (n = LLM rate limit 고려한 동시성)
    → extractor: resolver 선택 → jsoup fetch → 본문/메타 추출
@@ -67,14 +67,24 @@ User          id(uuid), email(uq), name, avatarUrl, googleId(uq), createdAt
 RefreshToken  id, userId(fk), tokenHash(uq), family, expiresAt, revokedAt
               — 회전 체인(family)으로 재사용 감지 시 세션 전체 무효화
 
-Bookmark      id, userId(fk), url, canonicalUrl, status(PENDING|PROCESSING|DONE|FAILED),
-              failReason, title, siteName, faviconUrl, thumbnailUrl,
-              summary, note(사용자 메모), category, contentText, llmRaw(jsonb),
-              pinned(bool), visibility(PRIVATE|PUBLIC), createdAt, updatedAt
-              uq(userId, canonicalUrl)  — 중복 저장 시 기존 카드 반환
-              idx(userId, status), idx(userId, createdAt)
+Folder        id, userId(fk 소유자), parentId(self-fk, null=루트), name,
+              description(소유주 편집, 공유 시 안내문), position(정렬),
+              visibility(PRIVATE|PUBLIC), shareSlug(uq, null), createdAt, updatedAt
+              uq(userId, parentId, name)  — 같은 위치 동명 폴더 금지
+              idx(userId, parentId)       — 폴더 트리 조회
+              — 유저 생성 시 루트 폴더("내 서랍", 기본 설명) 자동 1개
+              — 공유 단위 = 폴더. PUBLIC + shareSlug면 /s/{slug} 비로그인 읽기
 
-Tag           id, userId(fk), name, color   — uq(userId, name)
+Bookmark      id, userId(fk), folderId(fk, null=폴더 미지정/루트 직속), url, canonicalUrl,
+              status(PENDING|PROCESSING|DONE|FAILED), failReason,
+              title, siteName, faviconUrl, thumbnailUrl,
+              summary, note(사용자 메모), category, contentText, llmRaw(jsonb),
+              pinned(bool), createdAt, updatedAt
+              uq(userId, canonicalUrl)  — 중복 저장 시 기존 카드 반환
+              idx(userId, folderId), idx(userId, status), idx(userId, createdAt)
+              — thumbnailUrl은 저장하되 UI 기본은 파비콘(썸네일은 선택 노출)
+
+Tag           id, userId(fk), name, color   — uq(userId, name)   (보조: 검색·필터)
 BookmarkTag   (bookmarkId, tagId) 복합 PK
 
 AnalyzeJob    id, bookmarkId(fk), status(QUEUED|RUNNING|DONE|FAILED),
@@ -90,9 +100,16 @@ AnalyzeJob    id, bookmarkId(fk), status(QUEUED|RUNNING|DONE|FAILED),
 | --- | --- |
 | `GET /auth/google` → `GET /auth/google/callback` | OAuth 시작/콜백 → access+refresh 발급 (refresh는 httpOnly 쿠키) |
 | `POST /auth/refresh` / `POST /auth/logout` | 토큰 회전 / 무효화(+Redis 블랙리스트) |
-| `POST /bookmarks` | `{url}` → 생성+잡 인큐, 202. 중복 canonicalUrl이면 기존 카드 반환 |
-| `GET /bookmarks?q=&tag=&status=&cursor=` | 목록 (커서 페이지네이션, 검색·필터 겸용) |
-| `PATCH /bookmarks/{id}` | title/summary/note/tags/pinned 수정 |
+| `GET /folders` | 내 폴더 트리(중첩) |
+| `POST /folders` | `{parentId, name}` 폴더 생성 |
+| `PATCH /folders/{id}` | name / description(소유주) / parentId(이동) / position |
+| `DELETE /folders/{id}` | 폴더 삭제 (안의 링크는 상위로 이동 또는 미지정) |
+| `POST /folders/{id}/share` · `DELETE /folders/{id}/share` | 폴더 공개 on/off (shareSlug 발급·회수) |
+| `GET /s/{slug}` | 공개 폴더 읽기 (비로그인 — 트리+링크+설명 안내문) |
+| `POST /s/{slug}/import` | 공개 폴더를 내 서랍에 담기 (로그인) — 후순위 |
+| `POST /bookmarks` | `{url, folderId?}` → 생성+잡 인큐(folderId 없으면 미지정), 202. 중복 canonicalUrl이면 기존 카드 반환 |
+| `GET /bookmarks?folderId=&q=&tag=&status=&cursor=` | 목록 (커서 페이지네이션, 폴더·검색·필터 겸용) |
+| `PATCH /bookmarks/{id}` | title/summary/note/tags/pinned/**folderId(이동)** 수정 |
 | `DELETE /bookmarks/{id}` | 삭제 |
 | `POST /bookmarks/{id}/retry` | FAILED 재분석 (contentText 있으면 LLM만 재실행) |
 | `GET /bookmarks/events` (SSE) | 내 북마크 상태 변경 스트림 (JWT) |
@@ -109,8 +126,8 @@ AnalyzeJob    id, bookmarkId(fk), status(QUEUED|RUNNING|DONE|FAILED),
 
 ## 7. 확장 포인트 (자리만 두는 것)
 
-- **공유**: `visibility` + 추후 `Share(slug, ...)` 테이블.
+- **공유**: 폴더 단위(코어). `Folder.visibility` + `shareSlug`로 공개 페이지. 공개 폴더 "담기(import)"는 후순위.
 - **크롬 익스텐션**: `POST /bookmarks` + 동일 JWT — OpenAPI 스펙에서 클라이언트 생성.
-- **컬렉션/폴더**: 태그로 시작, 수요 생기면 추가.
+- **폴더**: 코어 구조(중첩·이동·설명·공유). 컬렉션 개념은 폴더로 흡수. 태그는 폴더를 가로지르는 검색·필터 보조.
 - **큐 교체**: `JobQueue` 인터페이스 뒤에 SKIP LOCKED 구현을 숨김 — RabbitMQ 필요해지면 구현체만 교체.
 - **워커 스케일아웃**: worker 프로파일 컨테이너 수 증가 (SKIP LOCKED가 자연 분배).
