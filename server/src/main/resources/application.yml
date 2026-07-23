@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: server
+  config:
+    # 리포 루트의 .env를 프로퍼티 소스로 사용 (없으면 무시) — KEY=VALUE 형식이 properties와 호환
+    import: "optional:file:../.env[.properties]"
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/moa}
+    username: ${DB_USER:moa}
+    password: ${DB_PASSWORD:moa}
+  jpa:
+    # 스키마는 Flyway가 관리, Hibernate는 검증만
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:placeholder-set-in-env}
+            client-secret: ${GOOGLE_CLIENT_SECRET:placeholder-set-in-env}
+            scope: openid, profile, email
+            redirect-uri: "{baseUrl}/auth/{registrationId}/callback"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+app:
+  frontend-url: ${FRONTEND_URL:http://localhost:3000}
+  auth:
+    # HS256 서명 키 — 32바이트 이상. 운영에서는 반드시 .env로 교체
+    jwt-secret: ${JWT_SECRET:dev-only-jwt-secret-0123456789abcdef0123456789}
+    access-ttl: 15m
+    refresh-ttl: 14d
+    cookie-secure: ${AUTH_COOKIE_SECURE:false}
