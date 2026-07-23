@@ -1,0 +1,27 @@
+# env / secrets
+.env
+.env.*
+!.env.example
+
+# claude local
+.claude/settings.local.json
+
+# node
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+
+# jvm
+.gradle/
+build/
+!**/src/**/build/
+
+# ide
+.idea/
+*.iml
+.vscode/
+
+# os
+Thumbs.db
+.DS_Store
