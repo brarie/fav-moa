@@ -53,10 +53,10 @@ pnpm verify   # = web(lint + typecheck + vitest) + server(gradlew check: ktlint/
 
 역할 분담 합의: GUI 설치·계정·키 발급은 사용자가, CLI로 되는 것(compose 작성, 컨테이너 기동, 마이그레이션, 코드 전부)은 Claude가.
 
-- [ ] **JDK 21 (Temurin)** 설치 (+ IntelliJ IDEA 권장 — 코드 리뷰용)
-- [ ] **Node.js 22 LTS** 설치 확인 + `corepack enable` (web은 pnpm 사용)
-- [ ] **Docker Desktop** 설치·실행 (dev용 Postgres + Redis 컨테이너) — WSL2 백엔드 권장
-- [ ] git 사용자 설정 확인 (`git config user.name/email`) — git init은 Claude가 함
+- [x] ~~JDK~~ — Corretto 24 설치돼 있음. 빌드 타겟 JDK 21은 Gradle toolchain(foojay resolver)이 자동 다운로드 (+ IntelliJ IDEA 권장 — 코드 리뷰용)
+- [x] ~~Node.js 22 + pnpm~~ — 확인 완료 (v22.18 / pnpm 10)
+- [x] ~~Docker Desktop~~ — 확인 완료, postgres+redis 컨테이너 기동됨
+- [x] ~~git init·GitHub~~ — https://github.com/brarie/fav-moa (public) 연결 완료
 - [x] ~~00-PLAN.md §5 결정 항목~~ — 2026-07-23 최종 확정 (Spring Boot 3+Kotlin / JPA+Flyway / 잡 테이블 큐 / JWT+Refresh / 컬러 A안 / 개인 서버 docker compose)
 
 ### Phase 3 전 (LLM 연동 전까지만 있으면 됨)
@@ -86,6 +86,6 @@ pnpm verify   # = web(lint + typecheck + vitest) + server(gradlew check: ktlint/
 ## 3. Claude Code 작업 규약 (개발 시작 후 CLAUDE.md로 이관)
 
 1. 모든 변경은 `pnpm verify` 녹색 후 커밋. 파서 변경은 fixture 테스트 동반 필수.
-2. Phase 단위로 브랜치 → 완료 시 DoD 체크리스트를 커밋 메시지/PR에 명시.
+2. 기능 단위 브랜치(`feat/<이슈번호>-<슬러그>`) → PR 본문에 DoD 체크리스트 → 사용자 리뷰 후 merge commit (squash 금지). 상세는 CLAUDE.md "Git 워크플로".
 3. 프론트 변경은 시드 데이터 기준 스크린샷으로 확인 (02-DESIGN.md 토큰 준수).
 4. 새 라이브러리 도입은 근거 한 줄과 함께 — 01-ARCHITECTURE.md의 결정을 뒤집을 땐 문서부터 수정.

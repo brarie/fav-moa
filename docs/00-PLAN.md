@@ -35,7 +35,7 @@
 
 | 항목 | explain.md | 확정 | 비고 (상세는 01 문서) |
 | --- | --- | --- | --- |
-| 백엔드 | NestJS | **Spring Boot 3 + Kotlin (JDK 21)** | 포트폴리오 목적 + 사용자 주력 스택이라 면접 방어력 최대. FE(Next.js)와 분리 유지 — 익스텐션이 같은 API 소비 |
+| 백엔드 | NestJS | **Spring Boot 4.1 + Kotlin (JDK 21)** | 포트폴리오 목적 + 사용자 주력 스택이라 면접 방어력 최대. FE(Next.js)와 분리 유지 — 익스텐션이 같은 API 소비 |
 | ORM | Prisma | **Spring Data JPA(Hibernate) + Flyway** | 사용자 숙련 영역. 마이그레이션은 Flyway SQL로 명시 관리 |
 | 큐 | Redis + BullMQ | **Postgres 잡 테이블 + `FOR UPDATE SKIP LOCKED` 폴링 워커** | 인프라 추가 없이 유실 방지·재시도·백오프·동시성 제한 직접 설계 — 면접 토크 포인트. Redis는 블랙리스트·pub/sub 용도로만 유지 |
 | 인증 | (미정) | **Spring Security OAuth2(Google) + 자체 JWT access+refresh 회전** | refresh 해시는 Postgres, 블랙리스트는 Redis. 익스텐션도 동일 토큰 |
@@ -50,7 +50,7 @@
 
 ### Phase 0 — 리포 & 하네스 셋업
 
-- 리포 스캐폴드: `web/`(Next.js, pnpm) + `server/`(Spring Boot 3 + Kotlin, Gradle Kotlin DSL)
+- 리포 스캐폴드: `web/`(Next.js 16, pnpm) + `server/`(Spring Boot 4.1 + Kotlin, Gradle Kotlin DSL)
 - docker-compose로 Postgres(pgvector 이미지) + Redis 기동, Flyway 초기 마이그레이션
 - CLAUDE.md, `.claude/` 스킬·설정, 루트 `pnpm verify` (web lint/typecheck/test + `gradlew check`) 단일 명령
 - springdoc-openapi → openapi-typescript 코드젠 파이프라인 (`pnpm gen:api`)
@@ -103,7 +103,7 @@
 
 ## 5. 사용자 결정 사항 (2026-07-23 최종 확정)
 
-1. ~~백엔드~~ → **Spring Boot 3 + Kotlin** (포트폴리오 목적, NestJS안 폐기).
+1. ~~백엔드~~ → **Spring Boot 4.1 + Kotlin** (포트폴리오 목적, NestJS안 폐기. 3.5는 지원 종료로 4.1 채택).
 2. ~~ORM~~ → **Spring Data JPA + Flyway** (Prisma안 폐기).
 3. ~~큐~~ → **Postgres 잡 테이블 + SKIP LOCKED** (BullMQ안 폐기, Redis는 블랙리스트·pub/sub 전용).
 4. ~~로그인~~ → **Google OAuth + 자체 JWT(access/refresh 회전)**.

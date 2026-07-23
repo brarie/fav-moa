@@ -1,0 +1,13 @@
+{
+  "name": "fav-moa",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -n web,server -c auto \"pnpm run dev:web\" \"pnpm run dev:server\"",
+    "dev:web": "pnpm -C web dev",
+    "dev:server": "cd server && gradlew bootRun",
+    "verify": "pnpm -C web verify && cd server && gradlew check"
+  },
+  "devDependencies": {
+    "concurrently": "^9"
+  }
+}

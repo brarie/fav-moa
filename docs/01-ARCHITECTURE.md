@@ -1,6 +1,6 @@
 # 아키텍처 (확정: 2026-07-23, Spring Boot 전환)
 
-프론트(Next.js)와 백엔드(**Spring Boot 3 + Kotlin**)를 분리한다.
+프론트(Next.js)와 백엔드(**Spring Boot 4 + Kotlin**)를 분리한다.
 
 - 분리 이유: 향후 크롬 익스텐션이 같은 API를 소비.
 - Spring 선택 이유: 포트폴리오 목적 + 사용자가 깊게 방어/확장 가능한 스택. 한국 백엔드 채용 시장의 주류.
@@ -10,9 +10,9 @@
 
 | 구분 | 선택 | 근거 |
 | --- | --- | --- |
-| 백엔드 | **Spring Boot 3.5 + Kotlin (JDK 21)**, Gradle Kotlin DSL | 사용자 주력 스택. Virtual Threads 활성화로 스크래핑 I/O 동시성 처리 (그 자체로 포트폴리오 포인트) |
-| 프론트 | **Next.js 15 (App Router)** — 순수 API 클라이언트 | 대시보드 UI 전용. 얇게 유지 |
-| DB / ORM | **PostgreSQL 16 (pgvector 이미지) + Spring Data JPA(Hibernate) + Flyway** | JPA는 사용자 숙련 영역. 마이그레이션은 Flyway로 SQL 명시 관리(pg_trgm·pgvector 인덱스 등 raw SQL 필요). 가변 데이터(LLM raw)는 `jsonb` 컬럼 매핑 |
+| 백엔드 | **Spring Boot 4.1 + Kotlin (JDK 21 toolchain)**, Gradle Kotlin DSL | 사용자 주력 스택. 3.5는 Initializr에서 내려가서(OSS 지원 종료) 현행 4.1 채택 — 스타터 이름 등 3.x 지식과 다른 부분 주의. Virtual Threads로 스크래핑 I/O 동시성 처리 (포트폴리오 포인트) |
+| 프론트 | **Next.js 16 (App Router)** — 순수 API 클라이언트 | 대시보드 UI 전용. 얇게 유지. Next 16은 breaking change 많음 — `web/AGENTS.md` 참고 |
+| DB / ORM | **PostgreSQL 17 (pgvector 이미지) + Spring Data JPA(Hibernate) + Flyway** | JPA는 사용자 숙련 영역. 마이그레이션은 Flyway로 SQL 명시 관리(pg_trgm·pgvector 인덱스 등 raw SQL 필요). 가변 데이터(LLM raw)는 `jsonb` 컬럼 매핑 |
 | 큐 | **Postgres 잡 테이블 + `FOR UPDATE SKIP LOCKED` 폴링 워커** | 인프라 추가 없이 유실 방지·재시도·백오프·동시성 제한을 직접 설계 — 면접 방어력 최상. MQ 필요 규모 아님. 워커는 같은 앱을 `worker` 프로파일로 별도 프로세스 기동 |
 | 인증 | **Spring Security OAuth2 Client(Google) + 자체 JWT(access 15분 + refresh 14일 회전)** | 스프링 정석 구현. refresh는 해시로 Postgres 저장 + 회전 체인 재사용 감지. 강제 만료는 Redis 블랙리스트 |
 | Redis | **Redis 7** — access token 블랙리스트 + pub/sub(워커→API SSE 중계) + 캐시 | 큐 역할은 아님(큐는 Postgres). 가볍게 유지 |
