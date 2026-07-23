@@ -4,8 +4,8 @@
   "scripts": {
     "dev": "concurrently -n web,server -c auto \"pnpm run dev:web\" \"pnpm run dev:server\"",
     "dev:web": "pnpm -C web dev",
-    "dev:server": "cd server && gradlew bootRun",
-    "verify": "pnpm -C web verify && cd server && gradlew check"
+    "dev:server": "server\\gradlew.bat -p server bootRun",
+    "verify": "pnpm -C web verify && server\\gradlew.bat -p server check"
   },
   "devDependencies": {
     "concurrently": "^9"

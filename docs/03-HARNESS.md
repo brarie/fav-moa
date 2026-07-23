@@ -8,7 +8,8 @@
 ### 1.1 단일 검증 명령
 
 ```bash
-pnpm verify   # = web(lint + typecheck + vitest) + server(gradlew check: ktlint/detekt + JUnit)
+pnpm verify   # = web(lint + typecheck + vitest) + server(gradlew check: ktlint + JUnit)
+# detekt는 안정판(1.23.x)이 Kotlin 2.3 미지원 → 2.0 안정판 출시 시 도입
 ```
 
 - Claude는 어떤 변경이든 커밋 전 `pnpm verify`를 돌린다. 이 명령이 프로젝트의 "녹색 불".

@@ -43,7 +43,7 @@ fav-moa/
 └─ CLAUDE.md
 ```
 
-검증 명령: 루트에서 `pnpm verify` = `web` lint+typecheck+test + `server` `./gradlew check`(ktlint, detekt, JUnit). CI도 동일 명령.
+검증 명령: 루트에서 `pnpm verify` = `web` lint+typecheck+test + `server` `./gradlew check`(ktlint, JUnit). CI도 동일 명령. (detekt는 안정판이 Kotlin 2.3을 지원하지 않아 보류 — 2.0 안정판 출시 시 도입)
 
 ## 3. 데이터 흐름
 
